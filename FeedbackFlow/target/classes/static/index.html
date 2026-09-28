@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FeedbackFlow – Course Feedback Collection System</title>
+    <meta name="description" content="FeedbackFlow - A streamlined Course Feedback Collection System for students, faculty, and administrators.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Notification Toast / Alert Box -->
+    <div id="alert-box" class="alert-box hidden" role="alert">
+        <span id="alert-icon" class="alert-icon"></span>
+        <span id="alert-message" class="alert-message"></span>
+        <button id="alert-close" class="alert-close" onclick="closeAlert()" aria-label="Close notification">&times;</button>
+    </div>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        <path d="M8 9h8"></path>
+                        <path d="M8 13h6"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="brand-title">FeedbackFlow</h1>
+                    <p class="brand-subtitle">Course Feedback Collection System</p>
+                </div>
+            </div>
+            <div class="header-links">
+                <a href="/swagger-ui/index.html" target="_blank" class="api-doc-link" title="Open Swagger OpenAPI Documentation">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Swagger API
+                </a>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="main-nav">
+            <div class="nav-container">
+                <button class="nav-btn active" data-tab="courses-section" id="tab-courses" onclick="switchTab('courses-section')">
+                    Courses
+                </button>
+                <button class="nav-btn" data-tab="create-course-section" id="tab-create-course" onclick="switchTab('create-course-section')">
+                    Create Course
+                </button>
+                <button class="nav-btn" data-tab="feedback-forms-section" id="tab-feedback-forms" onclick="switchTab('feedback-forms-section')">
+                    Feedback Forms
+                </button>
+                <button class="nav-btn highlight-tab" data-tab="submit-feedback-section" id="tab-submit-feedback" onclick="switchTab('submit-feedback-section')">
+                    Submit Feedback
+                </button>
+                <button class="nav-btn" data-tab="course-summary-section" id="tab-course-summary" onclick="switchTab('course-summary-section')">
+                    Course Summary
+                </button>
+                <button class="nav-btn" data-tab="faculty-summary-section" id="tab-faculty-summary" onclick="switchTab('faculty-summary-section')">
+                    Faculty Summary
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+
+        <!-- ============================================================ -->
+        <!-- 1. COURSES SECTION                                           -->
+        <!-- ============================================================ -->
+        <section id="courses-section" class="tab-content active">
+            <div class="section-header">
+                <div>
+                    <h2>Course Catalog</h2>
+                    <p class="section-desc">Manage existing academic courses, their feedback forms, and review performance summaries.</p>
+                </div>
+                <button class="btn btn-primary" onclick="switchTab('create-course-section')">+ Add New Course</button>
+            </div>
+
+            <div id="courses-loading" class="loading-spinner hidden">Loading courses...</div>
+
+            <div id="courses-grid" class="cards-grid">
+                <!-- Courses injected via JavaScript -->
+            </div>
+
+            <div id="courses-empty" class="empty-state hidden">
+                <div class="empty-icon">📚</div>
+                <h3>No courses found</h3>
+                <p>Start by adding your first course to begin collecting feedback.</p>
+                <button class="btn btn-primary" onclick="switchTab('create-course-section')">Create a Course</button>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 2. CREATE COURSE SECTION                                     -->
+        <!-- ============================================================ -->
+        <section id="create-course-section" class="tab-content">
+            <div class="card form-card">
+                <div class="card-header">
+                    <h2>Create New Course</h2>
+                    <p class="section-desc">Add a new academic course with instructor and semester details.</p>
+                </div>
+                <form id="create-course-form" onsubmit="handleCreateCourse(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="courseCode">Course Code <span class="required">*</span></label>
+                            <input type="text" id="courseCode" name="courseCode" placeholder="e.g. CS101" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="courseName">Course Name <span class="required">*</span></label>
+                            <input type="text" id="courseName" name="courseName" placeholder="e.g. Java Programming" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="facultyName">Faculty Name <span class="required">*</span></label>
+                            <input type="text" id="facultyName" name="facultyName" placeholder="e.g. Dr. Kumar" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="semester">Semester <span class="required">*</span></label>
+                            <input type="text" id="semester" name="semester" placeholder="e.g. 2026-1" required>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="btn-save-course">Create Course</button>
+                        <button type="button" class="btn btn-secondary" onclick="switchTab('courses-section')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 3. FEEDBACK FORMS MANAGEMENT SECTION                         -->
+        <!-- ============================================================ -->
+        <section id="feedback-forms-section" class="tab-content">
+            <div class="section-header">
+                <div>
+                    <h2>Feedback Form Management</h2>
+                    <p class="section-desc">Configure deadlines, open/close feedback cycles, and manage rating questions for courses.</p>
+                </div>
+            </div>
+
+            <!-- Course Selector for Form Management -->
+            <div class="card filter-card">
+                <div class="form-group">
+                    <label for="form-course-select"><strong>Select Course to Manage Feedback:</strong></label>
+                    <div class="inline-select-row">
+                        <select id="form-course-select" onchange="onFormCourseSelected()" class="select-input">
+                            <option value="">-- Choose a Course --</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="loadCoursesDropdowns()">Refresh Courses</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback Form Details Container -->
+            <div id="feedback-form-details" class="hidden">
+                <div class="card status-overview-card">
+                    <div class="overview-header">
+                        <div>
+                            <span class="badge badge-code" id="ff-course-code">CS101</span>
+                            <h3 id="ff-course-name" class="overview-title">Java Programming</h3>
+                            <p class="overview-meta">Faculty: <strong id="ff-faculty-name">Dr. Kumar</strong> &bull; Semester: <strong id="ff-semester">2026-1</strong></p>
+                        </div>
+                        <div class="status-actions">
+                            <div class="status-indicator">
+                                <span class="status-label">Status:</span>
+                                <span id="ff-status-badge" class="badge badge-open">OPEN</span>
+                            </div>
+                            <div class="deadline-indicator">
+                                <span class="status-label">Deadline:</span>
+                                <span id="ff-deadline-text" class="deadline-val">2026-10-15</span>
+                            </div>
+                            <div class="btn-group">
+                                <button id="btn-open-feedback" class="btn btn-success" onclick="openFeedback()">Open Feedback</button>
+                                <button id="btn-close-feedback" class="btn btn-outline-danger" onclick="closeFeedback()">Close Feedback</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Question Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Add Feedback Question</h3>
+                        <p class="section-desc">Questions will be rated by students on a 1 (Very Poor) to 5 (Excellent) scale.</p>
+                    </div>
+                    <form id="add-question-form" onsubmit="handleAddQuestion(event)">
+                        <div class="inline-input-group">
+                            <input type="text" id="newQuestionText" placeholder="e.g. How clearly does the faculty explain concepts?" required>
+                            <button type="submit" class="btn btn-primary" id="btn-add-question">Add Question</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Configured Questions List -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Questions in Feedback Form</h3>
+                    </div>
+                    <div id="questions-list-container">
+                        <ol id="questions-list" class="styled-list">
+                            <!-- Injected questions -->
+                        </ol>
+                    </div>
+                    <div id="questions-empty" class="empty-text hidden">
+                        No questions added yet. Add at least one rating question above so students can give feedback.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Feedback Form Prompt (if form doesn't exist for selected course) -->
+            <div id="no-feedback-form-box" class="card hidden">
+                <div class="empty-state">
+                    <div class="empty-icon">⚙️</div>
+                    <h3>No Feedback Form Created Yet</h3>
+                    <p>There is no feedback form configured for this course. Set a deadline to create and open it.</p>
+                    <form id="create-feedback-form" onsubmit="handleCreateFeedbackForm(event)" class="simple-inline-form">
+                        <div class="form-group inline-fg">
+                            <label for="formDeadline">Submission Deadline:</label>
+                            <input type="date" id="formDeadline" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Create Feedback Form</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 4. STUDENT FEEDBACK SUBMISSION SECTION                       -->
+        <!-- ============================================================ -->
+        <section id="submit-feedback-section" class="tab-content">
+            <div class="section-header">
+                <div>
+                    <h2>Student Feedback Submission</h2>
+                    <p class="section-desc">Submit your honest evaluation. Each student may submit feedback only ONCE per course per semester.</p>
+                </div>
+            </div>
+
+            <div class="card filter-card">
+                <div class="form-group">
+                    <label for="feedback-course-select"><strong>Select Course to Review:</strong></label>
+                    <select id="feedback-course-select" onchange="onFeedbackCourseSelected()" class="select-input">
+                        <option value="">-- Choose a Course --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Student Form Container -->
+            <div id="feedback-submission-container" class="card hidden">
+                <div class="course-banner">
+                    <div>
+                        <span class="badge badge-code" id="sub-course-code">CS101</span>
+                        <h3 id="sub-course-name" class="banner-title">Java Programming</h3>
+                        <p class="banner-meta">Instructor: <strong id="sub-faculty-name">Dr. Kumar</strong> &bull; Semester: <strong id="sub-semester">2026-1</strong></p>
+                    </div>
+                    <div class="banner-status">
+                        <span id="sub-status-badge" class="badge badge-open">OPEN</span>
+                        <div class="deadline-note">Deadline: <span id="sub-deadline">2026-10-15</span></div>
+                    </div>
+                </div>
+
+                <!-- Form is closed / expired notice -->
+                <div id="sub-closed-warning" class="alert alert-warning hidden">
+                    <strong>Feedback is Closed:</strong> Submissions are currently not accepted for this course because the feedback collection is closed or the deadline has expired.
+                </div>
+
+                <form id="student-submission-form" onsubmit="handleSubmitFeedback(event)">
+                    <!-- Student ID Field -->
+                    <div class="form-group student-id-group">
+                        <label for="studentId"><strong>Student ID (Roll Number) <span class="required">*</span></strong></label>
+                        <input type="text" id="studentId" name="studentId" placeholder="e.g. STU001 or 21CS042" required class="input-large">
+                        <small class="field-hint">Note: You can submit this evaluation form only once for this course and semester.</small>
+                    </div>
+
+                    <div class="rating-legend">
+                        <span>Rating Scale:</span>
+                        <span class="scale-item"><strong>1</strong> = Very Poor</span>
+                        <span class="scale-item"><strong>2</strong> = Poor</span>
+                        <span class="scale-item"><strong>3</strong> = Average</span>
+                        <span class="scale-item"><strong>4</strong> = Good</span>
+                        <span class="scale-item"><strong>5</strong> = Excellent</span>
+                    </div>
+
+                    <!-- Questions list with rating scale 1 to 5 -->
+                    <div id="feedback-questions-list" class="feedback-questions">
+                        <!-- Questions injected dynamically -->
+                    </div>
+
+                    <div class="form-actions submit-actions">
+                        <button type="submit" class="btn btn-primary btn-large" id="btn-submit-feedback">
+                            Submit Feedback
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 5. COURSE SUMMARY SECTION                                    -->
+        <!-- ============================================================ -->
+        <section id="course-summary-section" class="tab-content">
+            <div class="section-header">
+                <div>
+                    <h2>Course Feedback Summary</h2>
+                    <p class="section-desc">View overall evaluation results and detailed question-wise ratings submitted by students.</p>
+                </div>
+            </div>
+
+            <div class="card filter-card">
+                <div class="form-group">
+                    <label for="summary-course-select"><strong>Select Course to View Feedback Analytics:</strong></label>
+                    <div class="inline-select-row">
+                        <select id="summary-course-select" onchange="onSummaryCourseSelected()" class="select-input">
+                            <option value="">-- Choose a Course --</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="loadCourseSummary()">View Summary</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="course-summary-container" class="hidden">
+                <!-- Summary Metrics Cards -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label">Course Name</div>
+                        <div class="stat-value" id="sum-course-name">-</div>
+                        <div class="stat-sub" id="sum-faculty-name">Faculty: -</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Student Responses</div>
+                        <div class="stat-value" id="sum-total-responses">0</div>
+                        <div class="stat-sub">Verified submissions</div>
+                    </div>
+                    <div class="stat-card stat-highlight">
+                        <div class="stat-label">Overall Average Rating</div>
+                        <div class="stat-value rating-val"><span id="sum-overall-average">0.00</span> <span class="rating-max">/ 5.0</span></div>
+                        <div class="stat-sub" id="sum-rating-verbal">Average score</div>
+                    </div>
+                </div>
+
+                <!-- Questions Breakdown Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Question-wise Rating Breakdown</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="styled-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 8%;">#</th>
+                                    <th style="width: 55%;">Evaluation Question</th>
+                                    <th style="width: 17%;">Average Score</th>
+                                    <th style="width: 20%;">Visual Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summary-questions-tbody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="summary-no-questions" class="empty-text hidden">
+                        No responses or questions available for this course yet.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 6. FACULTY SUMMARY SECTION                                   -->
+        <!-- ============================================================ -->
+        <section id="faculty-summary-section" class="tab-content">
+            <div class="section-header">
+                <div>
+                    <h2>Faculty Feedback Summary</h2>
+                    <p class="section-desc">Search a faculty member to see feedback metrics across all courses taught by them.</p>
+                </div>
+            </div>
+
+            <div class="card filter-card">
+                <form id="faculty-summary-form" onsubmit="handleFacultySearch(event)">
+                    <div class="form-group">
+                        <label for="faculty-search-input"><strong>Faculty Name:</strong></label>
+                        <div class="inline-select-row">
+                            <input type="text" id="faculty-search-input" placeholder="e.g. Dr. Kumar" required class="input-search">
+                            <button type="submit" class="btn btn-primary" id="btn-faculty-search">View Summary</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="faculty-summary-results" class="card hidden">
+                <div class="card-header">
+                    <h3>Teaching Performance Overview: <span id="faculty-name-display" class="highlight-text"></span></h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="styled-table">
+                        <thead>
+                            <tr>
+                                <th>Course Code</th>
+                                <th>Course Name</th>
+                                <th>Semester</th>
+                                <th>Total Responses</th>
+                                <th>Average Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody id="faculty-courses-tbody">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="faculty-empty-results" class="empty-text hidden">
+                    No courses found for this faculty member. Please check the spelling or add courses first.
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Edit Course Modal -->
+    <div id="edit-course-modal" class="modal-backdrop hidden">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <h3>Edit Course Details</h3>
+                <button class="modal-close-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="edit-course-form" onsubmit="handleUpdateCourse(event)">
+                <input type="hidden" id="edit-course-id">
+                <div class="form-group">
+                    <label for="edit-course-code">Course Code <span class="required">*</span></label>
+                    <input type="text" id="edit-course-code" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-course-name">Course Name <span class="required">*</span></label>
+                    <input type="text" id="edit-course-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-faculty-name">Faculty Name <span class="required">*</span></label>
+                    <input type="text" id="edit-faculty-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-semester">Semester <span class="required">*</span></label>
+                    <input type="text" id="edit-semester" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Update Course</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p><strong>FeedbackFlow</strong> – Course Feedback Collection System &bull; College Project &bull; Built with Spring Boot & MySQL</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
